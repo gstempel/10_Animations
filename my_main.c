@@ -131,7 +131,32 @@ void first_pass() {
   jdyrlandweaver
   ====================*/
 struct vary_node ** second_pass() {
-  return NULL;
+  struct vary_node **ret = malloc(sizeof(struct vary_node *) * num_frames);
+
+  int f, i;
+  for (f = 0; f < num_frames; f++) {
+    struct vary_node * top = NULL;
+    for (i = 0;i < lastop; i++) {
+      if (op[i].opcode == VARY &&
+	  op[i].op.vary.start_frame <= f &&
+	  op[i].op.vary.end_frame >= f ) {
+
+	int start_frame = op[i].op.vary.start_frame;
+	int end_frame = op[i].op.vary.end_frame;
+	float percent = (f - start_frame) / (double) (end_frame - start_frame);
+
+	struct vary_node * curr = (struct vary_node *) malloc(sizeof(struct vary_node));
+	
+	strcpy(curr->name, op[i].op.vary.p->name);
+	curr->value = op[i].op.vary.start_val + percent * (op[i].op.vary.end_val - op[i].op.vary.start_val);
+	curr->next = top;
+	  
+	top = curr;
+      }
+    }
+    ret[f] = top;
+  }
+  return ret;
 }
 
 
